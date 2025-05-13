@@ -1,0 +1,39 @@
+rules_version = '2';
+
+service cloud.firestore {
+  match /databases/{database}/documents {
+
+    // Reglas para la colección 'files' donde se almacenará la metadata
+    match /files/{fileId} {
+      // Permitir lectura pública temporalmente (hasta la fecha especificada).
+      // Considera usar `allow read: if request.auth != null;` cuando implementes autenticación.
+      allow read: if request.time < timestamp.date(2025, 5, 16);
+
+      // Permitir la creación de nuevos documentos si cumplen la estructura esperada.
+      // Valida los campos requeridos y sus tipos básicos.
+      // Nota: La validación de 'date' asume que se guarda como string (ISO).
+      // Es recomendable guardar fechas como Timestamp de Firestore en el futuro.
+      allow create: if request.time < timestamp.date(2025, 5, 16) &&
+                       request.resource.data.keys().hasAll(['name', 'date', 'type', 'hashes', 'reportNumber']) &&
+                       request.resource.data.name is string && request.resource.data.name.size() > 0 &&
+                       request.resource.data.date is string && // Asume formato ISO String por ahora
+                       request.resource.data.type is string &&
+                       request.resource.data.hashes is map &&
+                       request.resource.data.hashes.keys().hasAll(['md5', 'sha1', 'sha256']) &&
+                       request.resource.data.hashes.md5 is string && request.resource.data.hashes.md5.size() > 0 &&
+                       request.resource.data.hashes.sha1 is string && request.resource.data.hashes.sha1.size() > 0 &&
+                       request.resource.data.hashes.sha256 is string && request.resource.data.hashes.sha256.size() > 0 &&
+                       (request.resource.data.reportNumber == null || request.resource.data.reportNumber is string);
+
+      // Denegar actualizaciones y eliminaciones por ahora.
+      // Implementa reglas específicas si necesitas permitir estas operaciones.
+      allow update, delete: if false;
+    }
+
+    // Es una buena práctica denegar explícitamente el acceso a otras rutas si no se definen reglas.
+    // Sin embargo, el comportamiento por defecto ya es denegar.
+    // match /{document=**} {
+    //   allow read, write: if false;
+    // }
+  }
+}
