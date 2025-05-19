@@ -16,6 +16,7 @@
 <img alt="Firebase" src="https://img.shields.io/badge/Firebase-DD2C00.svg?style=flat&logo=Firebase&logoColor=white" class="inline-block mx-1" style="margin: 0px 2px;">
 <img alt=".ENV" src="https://img.shields.io/badge/.ENV-ECD53F.svg?style=flat&logo=dotenv&logoColor=black" class="inline-block mx-1" style="margin: 0px 2px;">
 <img alt="JavaScript" src="https://img.shields.io/badge/JavaScript-F7DF1E.svg?style=flat&logo=JavaScript&logoColor=black" class="inline-block mx-1" style="margin: 0px 2px;">
+<img alt="Segurmatica" src="https://img.shields.io/badge/Segurmatica-008000.svg?style=flat&logoColor=white" class="inline-block mx-1" style="margin: 0px 2px;">
 <img alt="Nodemon" src="https://img.shields.io/badge/Nodemon-76D04B.svg?style=flat&logo=Nodemon&logoColor=white" class="inline-block mx-1" style="margin: 0px 2px;">
 <img alt="React" src="https://img.shields.io/badge/React-61DAFB.svg?style=flat&logo=React&logoColor=black" class="inline-block mx-1" style="margin: 0px 2px;">
 
