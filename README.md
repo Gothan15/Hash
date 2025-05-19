@@ -31,10 +31,6 @@ _Optimizando el análisis seguro de archivos con una eficiencia impecable._
 
 </div>
 
-<div classname='mb-2'>
-
-</div>
-
 HashBro es una aplicación web construida con React y Vite que permite a los usuarios subir archivos, calcular sus hashes (MD5, SHA1, SHA256) y consultar la información de seguridad de estos archivos utilizando dos motores de análisis: la API de VirusTotal y el antivirus Segurmatica. La información y los metadatos de los archivos se almacenan en Firebase Firestore.
 
 ## Características Principales
