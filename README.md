@@ -2,9 +2,9 @@
 
 *Empowering secure file analysis with seamless efficiency.*
 
-[![Last Commit](https://img.shields.io/github/last-commit/TU_USUARIO/TU_REPO/main?label=last%20commit&color=blue)](https://github.com/TU_USUARIO/TU_REPO/commits/main)
-[![JavaScript](https://img.shields.io/github/languages/top/TU_USUARIO/TU_REPO?label=javascript&color=yellow)](https://github.com/TU_USUARIO/TU_REPO)
-[![Languages](https://img.shields.io/github/languages/count/TU_USUARIO/TU_REPO?label=languages&color=blue)](https://github.com/TU_USUARIO/TU_REPO)
+[![Last Commit](https://img.shields.io/github/last-commit/TU_USUARIO/TU_REPO/main?label=last%20commit&color=blue)](https://github.com/Gothan15/Hash/commits/main)
+[![JavaScript](https://img.shields.io/github/languages/top/TU_USUARIO/TU_REPO?label=javascript&color=yellow)](https://github.com/Gothan15/Hash)
+[![Languages](https://img.shields.io/github/languages/count/TU_USUARIO/TU_REPO?label=languages&color=blue)](https://github.com/Gothan15/Hash)
 
 Built with the tools and technologies:
 
