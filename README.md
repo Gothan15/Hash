@@ -1,28 +1,35 @@
+<div align="center">
+
 # HashBro: Analizador de Archivos con VirusTotal y Firebase
 
 *Empowering secure file analysis with seamless efficiency.*
 
-[![Last Commit](https://img.shields.io/github/last-commit/TU_USUARIO/TU_REPO/main?label=last%20commit&color=blue)](https://github.com/Gothan15/Hash/commits/main)
-[![JavaScript](https://img.shields.io/github/languages/top/TU_USUARIO/TU_REPO?label=javascript&color=yellow)](https://github.com/Gothan15/Hash)
-[![Languages](https://img.shields.io/github/languages/count/TU_USUARIO/TU_REPO?label=languages&color=blue)](https://github.com/Gothan15/Hash)
+<img alt="last-commit" src="https://img.shields.io/github/last-commit/Gothan15/Hash?style=flat&logo=git&logoColor=white&color=0080ff" class="inline-block mx-1" style="margin: 0px 2px;">
+<img alt="repo-top-language" src="https://img.shields.io/github/languages/top/Gothan15/Hash?style=flat&color=0080ff" class="inline-block mx-1" style="margin: 0px 2px;">
+<img alt="repo-language-count" src="https://img.shields.io/github/languages/count/Gothan15/Hash?style=flat&color=0080ff" class="inline-block mx-1" style="margin: 0px 2px;">
 
-Built with the tools and technologies:
+<p><em>Built with the tools and technologies:</em></p>
 
-[![Express](https://img.shields.io/badge/Express-000000?logo=express&logoColor=white)](https://expressjs.com/)  
-[![JSON](https://img.shields.io/badge/JSON-000000?logo=json&logoColor=white)](https://www.json.org/)  
-[![npm](https://img.shields.io/badge/npm-CB3837?logo=npm&logoColor=white)](https://www.npmjs.com/)  
-[![Firebase](https://img.shields.io/badge/Firebase-FFCA28?logo=firebase&logoColor=black)](https://firebase.google.com/)  
-[![.ENV](https://img.shields.io/badge/.ENV-000000?logo=dotenv&logoColor=white)](https://github.com/motdotla/dotenv)  
-[![JavaScript](https://img.shields.io/badge/JavaScript-F7DF1E?logo=javascript&logoColor=black)](https://developer.mozilla.org/docs/Web/JavaScript)  
-[![Nodemon](https://img.shields.io/badge/Nodemon-76D04B?logo=nodemon&logoColor=white)](https://nodemon.io/)  
-[![React](https://img.shields.io/badge/React-61DAFB?logo=react&logoColor=black)](https://reactjs.org/)  
-[![TypeScript](https://img.shields.io/badge/TypeScript-3178C6?logo=typescript&logoColor=white)](https://www.typescriptlang.org/)  
-[![Zod](https://img.shields.io/badge/Zod-000000?logo=zod&logoColor=white)](https://github.com/colinhacks/zod)  
-[![Vite](https://img.shields.io/badge/Vite-646CFF?logo=vite&logoColor=white)](https://vitejs.dev/)  
-[![ESLint](https://img.shields.io/badge/ESLint-4B32C3?logo=eslint&logoColor=white)](https://eslint.org/)  
-[![Axios](https://img.shields.io/badge/Axios-5A29E4?logo=axios&logoColor=white)](https://axios-http.com/)  
-[![date-fns](https://img.shields.io/badge/date--fns-3178C6?logo=date-fns&logoColor=white)](https://date-fns.org/)  
-[![React Hook Form](https://img.shields.io/badge/React%20Hook%20Form-EC5990?logo=reacthookform&logoColor=white)](https://react-hook-form.com/)
+<img alt="Express" src="https://img.shields.io/badge/Express-000000.svg?style=flat&logo=Express&logoColor=white" class="inline-block mx-1" style="margin: 0px 2px;">
+<img alt="JSON" src="https://img.shields.io/badge/JSON-000000.svg?style=flat&logo=JSON&logoColor=white" class="inline-block mx-1" style="margin: 0px 2px;">
+<img alt="npm" src="https://img.shields.io/badge/npm-CB3837.svg?style=flat&logo=npm&logoColor=white" class="inline-block mx-1" style="margin: 0px 2px;">
+<img alt="Firebase" src="https://img.shields.io/badge/Firebase-DD2C00.svg?style=flat&logo=Firebase&logoColor=white" class="inline-block mx-1" style="margin: 0px 2px;">
+<img alt=".ENV" src="https://img.shields.io/badge/.ENV-ECD53F.svg?style=flat&logo=dotenv&logoColor=black" class="inline-block mx-1" style="margin: 0px 2px;">
+<img alt="JavaScript" src="https://img.shields.io/badge/JavaScript-F7DF1E.svg?style=flat&logo=JavaScript&logoColor=black" class="inline-block mx-1" style="margin: 0px 2px;">
+<img alt="Nodemon" src="https://img.shields.io/badge/Nodemon-76D04B.svg?style=flat&logo=Nodemon&logoColor=white" class="inline-block mx-1" style="margin: 0px 2px;">
+<img alt="React" src="https://img.shields.io/badge/React-61DAFB.svg?style=flat&logo=React&logoColor=black" class="inline-block mx-1" style="margin: 0px 2px;">
+
+<br>
+
+<img alt="TypeScript" src="https://img.shields.io/badge/TypeScript-3178C6.svg?style=flat&logo=TypeScript&logoColor=white" class="inline-block mx-1" style="margin: 0px 2px;">
+<img alt="Zod" src="https://img.shields.io/badge/Zod-3E67B1.svg?style=flat&logo=Zod&logoColor=white" class="inline-block mx-1" style="margin: 0px 2px;">
+<img alt="Vite" src="https://img.shields.io/badge/Vite-646CFF.svg?style=flat&logo=Vite&logoColor=white" class="inline-block mx-1" style="margin: 0px 2px;">
+<img alt="ESLint" src="https://img.shields.io/badge/ESLint-4B32C3.svg?style=flat&logo=ESLint&logoColor=white" class="inline-block mx-1" style="margin: 0px 2px;">
+<img alt="Axios" src="https://img.shields.io/badge/Axios-5A29E4.svg?style=flat&logo=Axios&logoColor=white" class="inline-block mx-1" style="margin: 0px 2px;">
+<img alt="datefns" src="https://img.shields.io/badge/datefns-770C56.svg?style=flat&logo=date-fns&logoColor=white" class="inline-block mx-1" style="margin: 0px 2px;">
+<img alt="React Hook Form" src="https://img.shields.io/badge/React%20Hook%20Form-EC5990.svg?style=flat&logo=React-Hook-Form&logoColor=white" class="inline-block mx-1" style="margin: 0px 2px;">
+
+</div>
 
 
 HashBro es una aplicación web construida con React y Vite que permite a los usuarios subir archivos, calcular sus hashes (MD5, SHA1, SHA256) y consultar la información de seguridad de estos hashes utilizando la API de VirusTotal. La información y los metadatos de los archivos se almacenan en Firebase Firestore.
