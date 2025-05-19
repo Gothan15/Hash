@@ -31,7 +31,7 @@ _Optimizando el análisis seguro de archivos con una eficiencia impecable._
 
 </div>
 
-<div>
+<div classname='mb-2'>
 
 </div>
 
