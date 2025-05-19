@@ -2,7 +2,7 @@
 
 <div align="center">
 
-# HashBro: Analizador de Archivos con VirusTotal y Firebase
+# HashBro: Analizador de Archivos con VirusTotal, Segurmatica y Firebase
 
 _Optimizando el análisis seguro de archivos con una eficiencia impecable._
 
@@ -33,12 +33,13 @@ _Optimizando el análisis seguro de archivos con una eficiencia impecable._
 
 </div>
 
-HashBro es una aplicación web construida con React y Vite que permite a los usuarios subir archivos, calcular sus hashes (MD5, SHA1, SHA256) y consultar la información de seguridad de estos hashes utilizando la API de VirusTotal. La información y los metadatos de los archivos se almacenan en Firebase Firestore.
+HashBro es una aplicación web construida con React y Vite que permite a los usuarios subir archivos, calcular sus hashes (MD5, SHA1, SHA256) y consultar la información de seguridad de estos archivos utilizando dos motores de análisis: la API de VirusTotal y el antivirus Segurmatica. La información y los metadatos de los archivos se almacenan en Firebase Firestore.
 
 ## Características Principales
 
 - Carga de archivos y cálculo de hashes (MD5, SHA1, SHA256) en el cliente.
 - Integración con la API de VirusTotal para obtener informes de análisis de archivos.
+- Análisis local de archivos con el antivirus Segurmatica.
 - Almacenamiento de metadatos de archivos y resultados en Firebase Firestore.
 - Interfaz de usuario creada con React y Vite.
 - Funciones Cloud de Firebase para interactuar con la API de VirusTotal de forma segura.
@@ -46,8 +47,9 @@ HashBro es una aplicación web construida con React y Vite que permite a los usu
 ## Tecnologías Utilizadas
 
 - **Frontend:** React, Vite
-- **Backend:** Firebase (Firestore, Cloud Functions)
+- **Backend:** Firebase (Firestore, Cloud Functions), Express (para Segurmatica)
 - **API Externa:** VirusTotal API
+- **Antivirus Local:** Segurmatica Antivirus
 - **Linting:** ESLint
 
 ## Configuración del Proyecto
@@ -57,6 +59,7 @@ HashBro es una aplicación web construida con React y Vite que permite a los usu
 - Node.js (versión especificada en [`functions/package.json`](d:\hashbro\functions\package.json))
 - Cuenta de Firebase y proyecto configurado.
 - API Key de VirusTotal.
+- Segurmatica Antivirus instalado (para análisis local).
 
 ### Pasos de Configuración
 
@@ -156,6 +159,60 @@ HashBro es una aplicación web construida con React y Vite que permite a los usu
 - [`firestore.rules`](d:\hashbro\firestore.rules): Reglas de seguridad para Firestore.
 - `firestore.indexes.json`: Definiciones de índices para Firestore.
 - [`eslint.config.js`](d:\hashbro\eslint.config.js): Configuración de ESLint.
+- [`serverSegurmatica.cjs`](d:\hashbro\serverSegurmatica.cjs): Servidor Express para integración con Segurmatica Antivirus.
+
+## Integración con Segurmatica Antivirus
+
+HashBro incluye una integración completa con el antivirus Segurmatica, permitiendo el análisis local de archivos para detección de malware. Esta integración es una parte fundamental del sistema y complementa el análisis basado en la nube de VirusTotal.
+
+### Configuración de Segurmatica
+
+1. **Instalación del Antivirus:**
+
+   - Es necesario tener instalado Segurmatica Antivirus en el servidor o máquina donde se ejecuta la aplicación.
+   - La ruta predeterminada al ejecutable de escaneo es: `C:/Program Files (x86)/SEGURMATICA/Segurmatica Antivirus 2/segavcmd.exe`.
+   - Si tu instalación se encuentra en otra ubicación, deberás modificar la ruta en [`serverSegurmatica.cjs`](d:\hashbro\serverSegurmatica.cjs).
+
+2. **Servidor Express para Segurmatica:**
+
+   - El proyecto incluye un servidor Express dedicado ([`serverSegurmatica.cjs`](d:\hashbro\serverSegurmatica.cjs)) que actúa como intermediario entre la aplicación web y el antivirus local.
+   - Este servidor se ejecuta por defecto en el puerto 3001.
+   - Gestiona la carga temporal de archivos y la comunicación con el ejecutable de línea de comandos de Segurmatica.
+
+3. **Iniciar el Servidor de Segurmatica:**
+   Para usar la funcionalidad de análisis con Segurmatica, debes iniciar el servidor Express:
+   ```bash
+   node serverSegurmatica.cjs
+   ```
+   O, utilizando nodemon para desarrollo:
+   ```bash
+   nodemon serverSegurmatica.cjs
+   ```
+
+### Funcionamiento de Segurmatica en la Aplicación
+
+1. **Flujo de Escaneo:**
+
+   - Cuando un usuario sube un archivo, el componente [`SegurmaticaScan.jsx`](d:\hashbro\src\components\file\SegurmaticaScan.jsx) se encarga de enviar el archivo al servidor Express local.
+   - El servidor recibe el archivo, lo guarda temporalmente en la carpeta `uploads/` y ejecuta el comando de escaneo de Segurmatica.
+   - Los resultados del análisis son interpretados y devueltos al frontend como una respuesta JSON.
+   - La aplicación clasifica los archivos en diferentes categorías según el resultado: "limpio", "infectado", "sospechoso" o "desconocido".
+
+2. **Integración en la Interfaz de Usuario:**
+
+   - Los resultados del análisis de Segurmatica se muestran en la interfaz de usuario con indicadores visuales claros.
+   - Los usuarios pueden ver un resumen del estado de seguridad del archivo, incluyendo si Segurmatica detectó alguna amenaza.
+   - También es posible volver a escanear archivos previamente analizados.
+
+3. **Almacenamiento de Resultados:**
+
+   - Los resultados del análisis de Segurmatica se almacenan en Firestore junto con los hashes del archivo y otros metadatos.
+   - Esto permite un seguimiento histórico de los análisis realizados y facilita la comparación de resultados a lo largo del tiempo.
+
+4. **Mejores Prácticas:**
+   - Mantén siempre actualizado el antivirus Segurmatica para garantizar la detección de las amenazas más recientes.
+   - Configura adecuadamente los permisos en el sistema para que la aplicación pueda ejecutar los comandos de escaneo.
+   - Revisa periódicamente la carpeta de `uploads/` para eliminar archivos temporales innecesarios.
 
 ## TODOs y Mejoras Potenciales
 
