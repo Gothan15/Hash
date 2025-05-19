@@ -18,8 +18,7 @@ const cors = require("cors")({ origin: true });
 admin.initializeApp();
 require("dotenv").config();
 // Configuración de VirusTotal
-const VT_API_KEY = process.env.VT_API_KEY || "f8d880c694b7e70c4c64501c0f6373a1a9a136f449ec393e2a8de1883273e17e";
-
+const VT_API_KEY = process.env.VT_API_KEY;
 
 // Cloud Function para obtener información de archivo desde VirusTotal por hash
 exports.fetchFileInfo = functions.https.onRequest(async (req, res) => {
@@ -33,7 +32,9 @@ exports.fetchFileInfo = functions.https.onRequest(async (req, res) => {
       return res.status(400).json({ error: "Falta el parámetro hash" });
     }
     if (!VT_API_KEY) {
-      return res.status(500).json({ error: "API key de VirusTotal no configurada" });
+      return res
+        .status(500)
+        .json({ error: "API key de VirusTotal no configurada" });
     }
     try {
       const url = new URL(`https://www.virustotal.com/api/v3/files/${hash}`);
@@ -45,7 +46,9 @@ exports.fetchFileInfo = functions.https.onRequest(async (req, res) => {
       res.status(200).json(response.data);
     } catch (error) {
       res.status(error.response?.status || 500).json({
-        error: error.response?.data?.error?.message || "Error al consultar VirusTotal",
+        error:
+          error.response?.data?.error?.message ||
+          "Error al consultar VirusTotal",
         details: error.message,
         responseData: error.response?.data,
       });
