@@ -1,7 +1,5 @@
 <div align="center">
 
-<div align="center">
-
 # HashBro: Analizador de Archivos con VirusTotal, Segurmatica y Firebase
 
 _Optimizando el análisis seguro de archivos con una eficiencia impecable._
