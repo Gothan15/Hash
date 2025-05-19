@@ -51,12 +51,12 @@ app.post("/scan-segurmatica", upload.single("file"), (req, res) => {
     });
 
     proc.on('close', (code) => {
-      // Eliminar archivo temporal
-      fs.unlink(filePath, (err) => {
-        if (err) {
-          console.error('Error al eliminar archivo temporal:', err);
-        }
-      });
+      // No eliminar archivo temporal
+      // fs.unlink(filePath, (err) => {
+      //   if (err) {
+      //     console.error('Error al eliminar archivo temporal:', err);
+      //   }
+      // });
 
       res.json({
         exitCode: code,

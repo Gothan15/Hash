@@ -15,6 +15,7 @@ import { calculateHashes } from "../../utils/file-utils"
 import { classifyFile, getFileTypeIcon } from "../../utils/file-classifier"
 import { checkFileExists, saveFileData } from "../../services/firestore"
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "../ui/tooltip"
+import { Switch } from "../ui/switch"
 import * as LucideIcons from "lucide-react"
 
 export default function FileUploader({ onProcessed }) {
@@ -30,6 +31,7 @@ export default function FileUploader({ onProcessed }) {
   const [fileType, setFileType] = useState(null)
   const [existingFile, setExistingFile] = useState(null)
   const [isCheckingHash, setIsCheckingHash] = useState(false)
+  const [checkHashEnabled, setCheckHashEnabled] = useState(true)
 
   const handleFileChange = async (e) => {
     if (e.target.files && e.target.files[0]) {
@@ -168,10 +170,10 @@ export default function FileUploader({ onProcessed }) {
 
   // Check for existing file when hashes are calculated
   useEffect(() => {
-    if (fileHashes && fileHashes.sha256) {
+    if (fileHashes && fileHashes.sha256 && checkHashEnabled) {
       checkExistingFile(fileHashes.sha256)
     }
-  }, [fileHashes])
+  }, [fileHashes, checkHashEnabled])
 
   // Get the appropriate icon component based on file type
   const getFileIconComponent = () => {
@@ -251,22 +253,34 @@ export default function FileUploader({ onProcessed }) {
               </Alert>
             )}
 
-            {/* Calculate hashes button */}
+            {/* Calculate hashes button y switch de verificación */}
             {!fileHashes && !existingFile && (
-              <Button
-                className="mt-4 w-full"
-                onClick={() => computeFileHashes(selectedFile)}
-                disabled={(progress > 0 && progress < 100) || isCheckingHash}
-              >
-                {isCheckingHash ? (
-                  <>
-                    <LucideIcons.Loader2 className="mr-2 h-4 w-4 animate-spin" />
-                    Verificando archivo...
-                  </>
-                ) : (
-                  "Calcular hashes del archivo"
-                )}
-              </Button>
+              <>
+                <div className="flex items-center gap-2 mt-4">
+                  <Switch
+                    id="check-hash-switch"
+                    checked={checkHashEnabled}
+                    onCheckedChange={setCheckHashEnabled}
+                  />
+                  <Label htmlFor="check-hash-switch" className="cursor-pointer select-none">
+                    Verificar si el archivo ya existe antes de analizar
+                  </Label>
+                </div>
+                <Button
+                  className="mt-4 w-full"
+                  onClick={() => computeFileHashes(selectedFile)}
+                  disabled={(progress > 0 && progress < 100) || isCheckingHash}
+                >
+                  {isCheckingHash ? (
+                    <>
+                      <LucideIcons.Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                      Verificando archivo...
+                    </>
+                  ) : (
+                    "Calcular hashes del archivo"
+                  )}
+                </Button>
+              </>
             )}
 
             {/* Display hashes if available */}

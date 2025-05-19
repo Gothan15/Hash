@@ -13,7 +13,7 @@ service cloud.firestore {
       // Valida los campos requeridos y sus tipos básicos.
       // Nota: La validación de 'date' asume que se guarda como string (ISO).
       // Es recomendable guardar fechas como Timestamp de Firestore en el futuro.
-      allow create: if request.time < timestamp.date(2025, 5, 16) &&
+      allow create: if request.time < timestamp.date(2025, 7, 16) &&
                        request.resource.data.keys().hasAll(['name', 'date', 'type', 'hashes', 'reportNumber']) &&
                        request.resource.data.name is string && request.resource.data.name.size() > 0 &&
                        request.resource.data.date is string && // Asume formato ISO String por ahora

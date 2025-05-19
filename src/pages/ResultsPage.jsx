@@ -52,21 +52,25 @@ export default function ResultsPage() {
   }, [location.state]) // Only depend on location.state
 
   return (
-    <Card>
-      <CardHeader>
-        <CardTitle>Resultados del Análisis</CardTitle>
-        <CardDescription>Visualiza y gestiona tus archivos analizados</CardDescription>
-      </CardHeader>
-      <CardContent>
-        {isLoading ? (
-          <div className="flex justify-center items-center py-8">
-            <Loader2 className="h-8 w-8 animate-spin text-primary" />
-            <span className="ml-2">Cargando archivos...</span>
-          </div>
-        ) : (
-          <ResultsTable data={processedFiles} onDataChange={loadFiles} />
-        )}
-      </CardContent>
-    </Card>
+    <div className="px-1 sm:px-0 w-full overflow-x-auto ">
+      <Card className="w-full max-w-auto overflow-x-auto">
+        <CardHeader>
+          <CardTitle>Resultados del Análisis</CardTitle>
+          <CardDescription>Visualiza y gestiona tus archivos analizados</CardDescription>
+        </CardHeader>
+        <CardContent className="p-0 sm:p-6">
+          {isLoading ? (
+            <div className="flex justify-center items-center py-8 ">
+              <Loader2 className="h-8 w-8 animate-spin text-primary" />
+              <span className="ml-2">Cargando archivos...</span>
+            </div>
+          ) : (
+            <div className="overflow-x-auto w-full">
+              <ResultsTable data={processedFiles} onDataChange={loadFiles} />
+            </div>
+          )}
+        </CardContent>
+      </Card>
+    </div>
   )
 }

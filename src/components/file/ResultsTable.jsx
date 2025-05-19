@@ -1,6 +1,7 @@
 "use client"
 
-import { useState } from "react"
+import React, { useEffect } from 'react'
+import { useState, useRef } from "react"
 import { Table, TableBody, TableCaption, TableCell, TableHead, TableHeader, TableRow } from "../ui/table"
 import { Button } from "../ui/button"
 import { Input } from "../ui/input"
@@ -10,7 +11,8 @@ import { Pencil, Trash2, FileText, Search, X } from "lucide-react"
 import { Badge } from "../ui/badge"
 import * as LucideIcons from "lucide-react"
 import { getFileTypeIcon } from "../../utils/file-classifier"
-import { updateFile, deleteFile } from "../../services/firestore"
+import { updateFile, deleteFile, saveFileData } from "../../services/firestore"
+import { parseVirusTotalResult } from "../../services/virustotalParse"
 
 export default function ResultsTable({ data, onDataChange }) {
   const [searchTerm, setSearchTerm] = useState("")
@@ -20,7 +22,23 @@ export default function ResultsTable({ data, onDataChange }) {
   const [isDetailsDialogOpen, setIsDetailsDialogOpen] = useState(false)
   const [editReportNumber, setEditReportNumber] = useState("")
   const [editComment, setEditComment] = useState("")
+  const [sortColumn, setSortColumn] = useState(() => {
+    return localStorage.getItem('sortColumn') || null
+  })
+  const [sortDirection, setSortDirection] = useState(() => {
+    return localStorage.getItem('sortDirection') || 'asc'
+  })
+  const [progressMap, setProgressMap] = useState({}) // { [fileId]: porcentaje }
+  const progressTimers = useRef({})
+  const [currentPage, setCurrentPage] = useState(1)
+  const PAGE_SIZE = 10
 
+  useEffect(() => {
+    localStorage.setItem('sortColumn', sortColumn || '')
+    localStorage.setItem('sortDirection', sortDirection)
+  }, [sortColumn, sortDirection])
+
+  // Filtrado y ordenamiento
   const filteredData = data.filter(
     (file) =>
       file.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
@@ -28,6 +46,53 @@ export default function ResultsTable({ data, onDataChange }) {
       (file.comment && file.comment.toLowerCase().includes(searchTerm.toLowerCase())) ||
       (file.type && file.type.toLowerCase().includes(searchTerm.toLowerCase())),
   )
+
+  // Resetear página si cambia el filtro
+  useEffect(() => {
+    setCurrentPage(1)
+  }, [searchTerm, data])
+
+  const handleSort = (column) => {
+    if (column === sortColumn) {
+      const newDirection = sortDirection === "asc" ? "desc" : "asc"
+      setSortDirection(newDirection)
+    } else {
+      setSortColumn(column)
+      setSortDirection("asc")
+    }
+  }
+
+  const sortedData = React.useMemo(() => {
+    if (!sortColumn) return filteredData
+
+    return [...filteredData].sort((a, b) => {
+      let aValue = a[sortColumn]
+      let bValue = b[sortColumn]
+
+      // Handle null or undefined values
+      if (aValue == null) return sortDirection === "asc" ? -1 : 1
+      if (bValue == null) return sortDirection === "asc" ? 1 : -1
+
+      // Convert to lowercase for string comparison
+      if (typeof aValue === "string") aValue = aValue.toLowerCase()
+      if (typeof bValue === "string") bValue = bValue.toLowerCase()
+
+      if (aValue < bValue) {
+        return sortDirection === "asc" ? -1 : 1
+      }
+      if (aValue > bValue) {
+        return sortDirection === "asc" ? 1 : -1
+      }
+      return 0
+    })
+  }, [filteredData, sortColumn, sortDirection])
+
+  // Paginación
+  const totalResults = sortedData.length
+  const totalPages = Math.ceil(totalResults / PAGE_SIZE)
+  const paginatedData = totalResults > PAGE_SIZE
+    ? sortedData.slice((currentPage - 1) * PAGE_SIZE, currentPage * PAGE_SIZE)
+    : sortedData
 
   const handleEdit = (file) => {
     setSelectedFile(file)
@@ -74,6 +139,88 @@ export default function ResultsTable({ data, onDataChange }) {
     } catch (error) {
       console.error("Error updating file:", error)
       // Aquí podrías mostrar un mensaje de error al usuario
+    }
+  }
+
+  const handleRescan = async (file) => {
+    // Iniciar barra de progreso
+    setProgressMap((prev) => ({ ...prev, [file.id]: 0 }))
+    let progress = 0
+    clearInterval(progressTimers.current[file.id])
+    progressTimers.current[file.id] = setInterval(() => {
+      progress += Math.random() * 15 + 5
+      setProgressMap((prev) => ({ ...prev, [file.id]: Math.min(progress, 95) }))
+      if (progress >= 95) {
+        clearInterval(progressTimers.current[file.id])
+      }
+    }, 200)
+
+    try {
+      // Crear el nuevo objeto de archivo con la misma información pero fecha actual
+      const newFileData = {
+        name: file.name,
+        date: new Date(), // Nueva fecha de reescaneo
+        type: file.type,
+        size: file.size,
+        hashes: file.hashes,
+        reportNumber: file.reportNumber,
+        comment: file.comment,
+        originalScanDate: file.date, // Guardamos la fecha del escaneo original
+        scanResult: null, // Se actualizará después del escaneo
+        virusTotalResult: null, // Se actualizará después del escaneo
+      }
+
+      // Crear formData para el archivo
+      const formData = new FormData()
+      const blob = new Blob([file], { type: file.type })
+      formData.append("file", blob, file.name)
+
+      // Escanear con Segurmatica
+      const segResponse = await fetch("http://localhost:3001/scan-segurmatica", {
+        method: "POST",
+        body: formData,
+      })
+
+      if (!segResponse.ok) {
+        throw new Error("Error al escanear con Segurmatica")
+      }
+
+      const segData = await segResponse.json()
+      const scanResult = segData.stdout || JSON.stringify(segData)
+      newFileData.scanResult = scanResult
+
+      // Obtener resultados de VirusTotal
+      const vtResponse = await fetch(`http://localhost:4000/api/file-info/${file.hashes.sha256}`)
+      if (vtResponse.ok) {
+        const vtData = await vtResponse.json()
+        const parsedVTResult = parseVirusTotalResult(vtData)
+        newFileData.virusTotalResult = parsedVTResult
+      }
+
+      // Guardar el nuevo análisis en Firestore
+      await saveFileData(newFileData)
+
+      // Terminar barra de progreso
+      clearInterval(progressTimers.current[file.id])
+      setProgressMap((prev) => ({ ...prev, [file.id]: 100 }))
+      
+      // Limpiar barra de progreso después de un segundo
+      setTimeout(() => setProgressMap((prev) => {
+        const copy = { ...prev }
+        delete copy[file.id]
+        return copy
+      }), 1000)
+
+      // Refrescar datos
+      if (onDataChange) onDataChange()
+    } catch (error) {
+      console.error("Error durante el reescaneo:", error)
+      clearInterval(progressTimers.current[file.id])
+      setProgressMap((prev) => {
+        const copy = { ...prev }
+        delete copy[file.id]
+        return copy
+      })
     }
   }
 
@@ -173,7 +320,7 @@ export default function ResultsTable({ data, onDataChange }) {
 
   return (
     <div className="space-y-4">
-      <div className="flex items-center gap-2">
+      <div className="flex flex-col sm:flex-row items-stretch sm:items-center gap-2">
         <div className="relative flex-1">
           <Search className="absolute left-2.5 top-2.5 h-4 w-4 text-muted-foreground" />
           <Input
@@ -197,81 +344,157 @@ export default function ResultsTable({ data, onDataChange }) {
         </div>
       </div>
 
-      <div className="rounded-md border">
-        <Table>
-          <TableCaption className="pb-3">
-            {filteredData.length === 0 ? "No se encontraron archivos" : `Mostrando ${filteredData.length} de ${data.length} archivos`}
-          </TableCaption>
-          <TableHeader>
-            <TableRow>
-              <TableHead>Nombre</TableHead>
-              <TableHead>Tipo</TableHead>
-              <TableHead>SHA-256</TableHead>
-              <TableHead>Tamaño</TableHead>
-              <TableHead>Fecha</TableHead>
-              <TableHead>Segurmatica</TableHead>
-              <TableHead>VirusTotal</TableHead>
-              <TableHead>Reporte #</TableHead>
-              <TableHead>Comentario</TableHead>
-              <TableHead className="w-[100px]">Acciones</TableHead>
-            </TableRow>
-          </TableHeader>
-          <TableBody>
-            {filteredData.length === 0 ? (
+      <div className="rounded-md border overflow-x-auto">
+        <div className="min-w-[900px]">
+          <Table>
+            {/* <TableCaption className="pb-3">
+              {filteredData.length === 0 ? "No se encontraron archivos" : `Mostrando ${filteredData.length} de ${data.length} archivos`}
+            </TableCaption> */}
+            <TableHeader>
               <TableRow>
-                
+                <TableHead>
+                  <Button variant="ghost" onClick={() => handleSort("name")}>
+                    Nombre {sortColumn === "name" && (sortDirection === "asc" ? "▲" : "▼")}
+                  </Button>
+                </TableHead>
+                <TableHead>
+                  <Button variant="ghost" onClick={() => handleSort("type")}>
+                    Tipo {sortColumn === "type" && (sortDirection === "asc" ? "▲" : "▼")}
+                  </Button>
+                </TableHead>
+                <TableHead>SHA-256</TableHead>
+                <TableHead>
+                  <Button variant="ghost" onClick={() => handleSort("size")}>
+                    Tamaño {sortColumn === "size" && (sortDirection === "asc" ? "▲" : "▼")}
+                  </Button>
+                </TableHead>
+                <TableHead>
+                  <Button variant="ghost" onClick={() => handleSort("date")}>
+                    Fecha {sortColumn === "date" && (sortDirection === "asc" ? "▲" : "▼")}
+                  </Button>
+                </TableHead>
+                <TableHead>Segurmatica</TableHead>
+                <TableHead>VirusTotal</TableHead>
+                <TableHead>
+                  <Button variant="ghost" onClick={() => handleSort("reportNumber")}>
+                    Reporte # {sortColumn === "reportNumber" && (sortDirection === "asc" ? "▲" : "▼")}
+                  </Button>
+                </TableHead>
+                <TableHead>
+                  <Button variant="ghost" onClick={() => handleSort("comment")}>
+                    Comentario {sortColumn === "comment" && (sortDirection === "asc" ? "▲" : "▼")}
+                  </Button>
+                </TableHead>
+                <TableHead className="w-[100px]">Acciones</TableHead>
               </TableRow>
-            ) : (
-              filteredData.map((file) => {
-                const FileTypeIcon = getFileTypeIconComponent(file.type)
-                return (
-                  <TableRow key={file.id}>
-                    <TableCell className="font-medium">
-                      <div className="flex items-center gap-2">
-                        <FileTypeIcon className="h-4 w-4 text-muted-foreground" />
-                        <span>{file.name}</span>
-                      </div>
-                    </TableCell>
-                    <TableCell>
-                      <Badge variant="outline" className="font-mono text-xs">
-                        {file.type || "Unknown"}
-                      </Badge>
-                    </TableCell>
-                    <TableCell>{file.hashes?.sha256 || "-"}</TableCell>
-                    <TableCell>{formatFileSize(file.size)}</TableCell>
-                    <TableCell>{formatDate(file.date)}</TableCell>
-                    <TableCell>{getScanStatusDisplay(file.scanResult)}</TableCell>
-                    <TableCell>{getVirusTotalStatusDisplay(file.virusTotalResult)}</TableCell>
-                    <TableCell>{file.reportNumber || "-"}</TableCell>
-                    <TableCell>{file.comment || "-"}</TableCell>
-                    
-                    <TableCell>
-                      <div className="flex items-center gap-2">
-                        <Button
-                          variant="ghost"
-                          size="icon"
-                          onClick={() => handleViewDetails(file)}
-                          title="Ver detalles"
-                        >
-                          <FileText className="h-4 w-4" />
-                          <span className="sr-only">Ver detalles</span>
-                        </Button>
-                        <Button variant="ghost" size="icon" onClick={() => handleEdit(file)} title="Editar">
-                          <Pencil className="h-4 w-4" />
-                          <span className="sr-only">Editar</span>
-                        </Button>
-                        <Button variant="ghost" size="icon" onClick={() => handleDelete(file)} title="Eliminar">
-                          <Trash2 className="h-4 w-4" />
-                          <span className="sr-only">Eliminar</span>
-                        </Button>
-                      </div>
-                    </TableCell>
-                  </TableRow>
-                )
-              })
-            )}
-          </TableBody>
-        </Table>
+            </TableHeader>
+            <TableBody>
+              {paginatedData.length === 0 ? (
+                <TableRow>
+                  
+                </TableRow>
+              ) : (
+                paginatedData.map((file) => {
+                  const FileTypeIcon = getFileTypeIconComponent(file.type)
+                  return (
+                    <TableRow key={file.id}>
+                      <TableCell className="font-medium">
+                        <div className="flex items-center gap-2">
+                          <FileTypeIcon className="h-4 w-4 text-muted-foreground" />
+                          <span>{file.name}</span>
+                        </div>
+                      </TableCell>
+                      <TableCell>
+                        <Badge variant="outline" className="font-mono text-xs">
+                          {file.type || "Unknown"}
+                        </Badge>
+                      </TableCell>
+                      <TableCell>{file.hashes?.sha256 || "-"}</TableCell>
+                      <TableCell>{formatFileSize(file.size)}</TableCell>
+                      <TableCell>{formatDate(file.date)}</TableCell>
+                      <TableCell>{getScanStatusDisplay(file.scanResult)}</TableCell>
+                      <TableCell>{getVirusTotalStatusDisplay(file.virusTotalResult)}</TableCell>
+                      <TableCell>{file.reportNumber || "-"}</TableCell>
+                      <TableCell>{file.comment || "-"}</TableCell>
+                      
+                      <TableCell>
+                        <div className="flex items-center gap-2">
+                          <Button
+                            variant="ghost"
+                            size="icon"
+                            onClick={() => handleViewDetails(file)}
+                            title="Ver detalles"
+                          >
+                            <FileText className="h-4 w-4" />
+                            <span className="sr-only">Ver detalles</span>
+                          </Button>
+                          <Button variant="ghost" size="icon" onClick={() => handleEdit(file)} title="Editar">
+                            <Pencil className="h-4 w-4" />
+                            <span className="sr-only">Editar</span>
+                          </Button>
+                          <Button variant="ghost" size="icon" onClick={() => handleDelete(file)} title="Eliminar">
+                            <Trash2 className="h-4 w-4" />
+                            <span className="sr-only">Eliminar</span>
+                          </Button>
+                          <Button
+                            variant="outline"
+                            size="icon"
+                            title="Reanalizar"
+                            disabled={progressMap[file.id] !== undefined}
+                            onClick={() => handleRescan(file)}
+                          >
+                            <LucideIcons.RefreshCw className={progressMap[file.id] !== undefined ? "animate-spin h-4 w-4" : "h-4 w-4"} />
+                            <span className="sr-only">Reanalizar</span>
+                          </Button>
+                          {progressMap[file.id] !== undefined && (
+                            <div className="relative w-24 h-2 bg-gray-200 rounded overflow-hidden ml-2">
+                              <div
+                                className="absolute left-0 top-0 h-full bg-primary transition-all"
+                                style={{ width: `${progressMap[file.id]}%` }}
+                              />
+                            </div>
+                          )}
+                        </div>
+                      </TableCell>
+                    </TableRow>
+                  )
+                })
+              )}
+            </TableBody>
+          </Table>
+        </div>
+        {/* Carrusel de paginación */}
+        {totalPages > 1 && (
+          <div className="flex flex-wrap justify-center items-center gap-2 py-4">
+            <Button
+              variant="ghost"
+              size="sm"
+              disabled={currentPage === 1}
+              onClick={() => setCurrentPage(currentPage - 1)}
+            >
+              {"<"}
+            </Button>
+            {Array.from({ length: totalPages }, (_, i) => (
+              <Button
+                key={i + 1}
+                variant={currentPage === i + 1 ? "default" : "outline"}
+                size="sm"
+                onClick={() => setCurrentPage(i + 1)}
+                style={{ minWidth: 32 }}
+              >
+                {i + 1}
+              </Button>
+            ))}
+            <Button
+              variant="ghost"
+              size="sm"
+              disabled={currentPage === totalPages}
+              onClick={() => setCurrentPage(currentPage + 1)}
+            >
+              {">"}
+            </Button>
+          </div>
+        )}
       </div>
 
       {/* Delete Confirmation Dialog */}

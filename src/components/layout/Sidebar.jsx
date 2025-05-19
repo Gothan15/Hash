@@ -55,10 +55,19 @@ export function Sidebar() {
                   </Link>
                 </SidebarMenuButton>
               </SidebarMenuItem>
+              <SidebarGroupLabel>Analítica</SidebarGroupLabel>
+              <SidebarMenuItem>
+                <SidebarMenuButton asChild isActive={isActive("/history")}> 
+                  <Link to="/history">
+                    <FileText className="h-4 w-4" />
+                    <span>Historial</span>
+                  </Link>
+                </SidebarMenuButton>
+              </SidebarMenuItem>
             </SidebarMenu>
           </SidebarGroupContent>
         </SidebarGroup>
-        <SidebarGroup>
+        {/* <SidebarGroup>
           <SidebarGroupLabel>Analítica</SidebarGroupLabel>
           <SidebarGroupContent>
             <SidebarMenu>
@@ -88,7 +97,7 @@ export function Sidebar() {
               </SidebarMenuItem>
             </SidebarMenu>
           </SidebarGroupContent>
-        </SidebarGroup>
+        </SidebarGroup> */}
       </SidebarContent>
       <SidebarFooter className="border-t p-4">
         <div className="flex items-center justify-between">
