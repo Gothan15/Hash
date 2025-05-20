@@ -1,15 +1,25 @@
-import { useNavigate } from "react-router-dom"
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "../components/ui/card"
-import Uploader from "../components/uploader"
-import { ResizablePanelGroup, ResizablePanel, ResizableHandle } from "../components/ui/resizable"
+import { useNavigate } from "react-router-dom";
+import {
+  Card,
+  CardContent,
+  CardDescription,
+  CardHeader,
+  CardTitle,
+} from "../components/ui/card";
+import Uploader from "../components/uploader";
+import {
+  ResizablePanelGroup,
+  ResizablePanel,
+  ResizableHandle,
+} from "../components/ui/resizable";
 
 export default function UploadPage() {
-  const navigate = useNavigate()
-
+  const navigate = useNavigate();
+  const saje = "upload";
   const handleFileProcessed = (fileData) => {
     // After processing, navigate to results page
-    navigate("/results", { state: { newFile: fileData } })
-  }
+    navigate("/results", { state: { newFile: fileData } });
+  };
 
   return (
     <ResizablePanelGroup direction="horizontal" className="w-full h-[80vh]">
@@ -17,7 +27,9 @@ export default function UploadPage() {
         <Card className="w-full h-full max-w-none mx-0">
           <CardHeader>
             <CardTitle>Subir y Analizar Archivo</CardTitle>
-            <CardDescription>Sube un archivo para analizarlo con Segurmatica y VirusTotal</CardDescription>
+            <CardDescription>
+              Sube un archivo para analizarlo con Segurmatica y VirusTotal
+            </CardDescription>
           </CardHeader>
           <CardContent className="h-full">
             <Uploader onProcessed={handleFileProcessed} />
@@ -26,5 +38,5 @@ export default function UploadPage() {
       </ResizablePanel>
       <ResizableHandle withHandle />
     </ResizablePanelGroup>
-  )
+  );
 }
