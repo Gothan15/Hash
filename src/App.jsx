@@ -1,13 +1,13 @@
-import { Routes, Route } from "react-router-dom"
-import { SidebarProvider } from "./components/ui/sidebar"
-import Layout from "./components/layout/Layout"
-import DashboardPage from "./pages/DashboardPage"
-import ResultsPage from "./pages/ResultsPage"
-import StatisticsPage from "./pages/StatisticsPage"
-import ThreatsPage from "./pages/ThreatsPage"
-import DatabasePage from "./pages/DatabasePage"
-import SettingsPage from "./pages/SettingsPage"
-import HistoryPage from "./pages/HistoryPage"
+import { Routes, Route } from "react-router-dom";
+import { SidebarProvider } from "./components/ui/sidebar";
+import Layout from "./components/layout/Layout";
+import DashboardPage from "./pages/DashboardPage";
+import ResultsPage from "./pages/ResultsPage";
+import StatisticsPage from "./pages/StatisticsPage";
+import ThreatsPage from "./pages/ThreatsPage";
+import DatabasePage from "./pages/DatabasePage";
+import SettingsPage from "./pages/SettingsPage";
+import HistoryPage from "./pages/HistoryPage";
 
 function App() {
   return (
@@ -24,8 +24,7 @@ function App() {
         </Route>
       </Routes>
     </SidebarProvider>
-  )
+  );
 }
 
-export default App
-
+export default App;

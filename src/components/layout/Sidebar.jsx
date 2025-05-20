@@ -1,5 +1,13 @@
-import { FileText, Home, Settings, Shield, Database, BarChart3, AlertTriangle } from "lucide-react"
-import { useLocation, Link } from "react-router-dom"
+import {
+  FileText,
+  Home,
+  Settings,
+  Shield,
+  Database,
+  BarChart3,
+  AlertTriangle,
+} from "lucide-react";
+import { useLocation, Link } from "react-router-dom";
 
 import {
   Sidebar as SidebarComponent,
@@ -12,97 +20,115 @@ import {
   SidebarMenu,
   SidebarMenuButton,
   SidebarMenuItem,
-} from "../ui/sidebar"
-import { Button } from "../ui/button"
-import { ModeToggle } from "../theme/mode-toggle"
+  SidebarTrigger,
+  useSidebar,
+} from "../ui/sidebar";
+import { Button } from "../ui/button";
+import { ModeToggle } from "../theme/mode-toggle";
 
 export function Sidebar() {
-  const location = useLocation()
+  const location = useLocation();
+  const { toggleSidebar, setOpen, setOpenMobile, isMobile } = useSidebar();
 
   // Helper to check if a path is active
   const isActive = (path) => {
-    if (path === "/" && location.pathname === "/") return true
-    if (path !== "/" && location.pathname.startsWith(path)) return true
-    return false
-  }
+    if (path === "/" && location.pathname === "/") return true;
+    if (path !== "/" && location.pathname.startsWith(path)) return true;
+    return false;
+  };
+
+  // Función para cerrar el sidebar al hacer clic en un enlace
+  const handleLinkClick = () => {
+    if (isMobile) {
+      setOpenMobile(false);
+    } else {
+      setOpen(false);
+    }
+  };
 
   return (
     <SidebarComponent>
       <SidebarHeader className="border-b">
-        <div className="flex items-center gap-2 px-2 py-3">
-          <Shield className="h-6 w-6 text-primary" />
-          <span className="font-semibold">SecureScan</span>
+        <div className="flex items-center justify-between gap-2 px-4 py-4">
+          <div className="flex items-center gap-2">
+            <Shield className="h-6 w-6 text-primary" />
+            <span className="font-semibold text-lg">SecureScan</span>
+          </div>
+          <SidebarTrigger className="md:flex size-8 rounded-md hover:bg-muted transition-colors" />
         </div>
       </SidebarHeader>
-      <SidebarContent>
+      <SidebarContent className="py-4">
         <SidebarGroup>
-          <SidebarGroupLabel>Navegación</SidebarGroupLabel>
+          <SidebarGroupLabel className="px-4 text-sm font-medium">
+            Navegación
+          </SidebarGroupLabel>
           <SidebarGroupContent>
             <SidebarMenu>
               <SidebarMenuItem>
-                <SidebarMenuButton asChild isActive={isActive("/")}>
-                  <Link to="/">
-                    <Home className="h-4 w-4" />
+                <SidebarMenuButton
+                  asChild
+                  isActive={isActive("/")}
+                  tooltip="Panel"
+                >
+                  <Link to="/" onClick={handleLinkClick}>
+                    <Home className="h-5 w-5" />
                     <span>Panel</span>
                   </Link>
                 </SidebarMenuButton>
               </SidebarMenuItem>
               <SidebarMenuItem>
-                <SidebarMenuButton asChild isActive={isActive("/results")}>
-                  <Link to="/results">
-                    <FileText className="h-4 w-4" />
+                <SidebarMenuButton
+                  asChild
+                  isActive={isActive("/results")}
+                  tooltip="Resultados"
+                >
+                  <Link to="/results" onClick={handleLinkClick}>
+                    <FileText className="h-5 w-5" />
                     <span>Resultados de Análisis</span>
-                  </Link>
-                </SidebarMenuButton>
-              </SidebarMenuItem>
-              <SidebarGroupLabel>Analítica</SidebarGroupLabel>
-              <SidebarMenuItem>
-                <SidebarMenuButton asChild isActive={isActive("/history")}> 
-                  <Link to="/history">
-                    <FileText className="h-4 w-4" />
-                    <span>Historial</span>
                   </Link>
                 </SidebarMenuButton>
               </SidebarMenuItem>
             </SidebarMenu>
           </SidebarGroupContent>
         </SidebarGroup>
-        {/* <SidebarGroup>
-          <SidebarGroupLabel>Analítica</SidebarGroupLabel>
+        <SidebarGroup className="mt-4">
+          <SidebarGroupLabel className="px-4 text-sm font-medium">
+            Analítica
+          </SidebarGroupLabel>
           <SidebarGroupContent>
             <SidebarMenu>
               <SidebarMenuItem>
-                <SidebarMenuButton asChild isActive={isActive("/statistics")}>
-                  <Link to="/statistics">
-                    <BarChart3 className="h-4 w-4" />
+                <SidebarMenuButton
+                  asChild
+                  isActive={isActive("/history")}
+                  tooltip="Historial"
+                >
+                  <Link to="/history" onClick={handleLinkClick}>
+                    <FileText className="h-5 w-5" />
+                    <span>Historial</span>
+                  </Link>
+                </SidebarMenuButton>
+              </SidebarMenuItem>
+              <SidebarMenuItem>
+                <SidebarMenuButton
+                  asChild
+                  isActive={isActive("/statistics")}
+                  tooltip="Estadísticas"
+                >
+                  <Link to="/statistics" onClick={handleLinkClick}>
+                    <BarChart3 className="h-5 w-5" />
                     <span>Estadísticas</span>
-                  </Link>
-                </SidebarMenuButton>
-              </SidebarMenuItem>
-              <SidebarMenuItem>
-                <SidebarMenuButton asChild isActive={isActive("/threats")}>
-                  <Link to="/threats">
-                    <AlertTriangle className="h-4 w-4" />
-                    <span>Reportes de Amenazas</span>
-                  </Link>
-                </SidebarMenuButton>
-              </SidebarMenuItem>
-              <SidebarMenuItem>
-                <SidebarMenuButton asChild isActive={isActive("/database")}>
-                  <Link to="/database">
-                    <Database className="h-4 w-4" />
-                    <span>Base de Datos</span>
                   </Link>
                 </SidebarMenuButton>
               </SidebarMenuItem>
             </SidebarMenu>
           </SidebarGroupContent>
-        </SidebarGroup> */}
+        </SidebarGroup>
       </SidebarContent>
       <SidebarFooter className="border-t p-4">
         <div className="flex items-center justify-between">
           <Button variant="outline" size="icon" asChild>
-            <Link to="/settings">
+            <Link to="/settings" onClick={handleLinkClick}>
               <Settings className="h-4 w-4" />
               <span className="sr-only">Configuración</span>
             </Link>
@@ -111,5 +137,5 @@ export function Sidebar() {
         </div>
       </SidebarFooter>
     </SidebarComponent>
-  )
+  );
 }
