@@ -15,7 +15,6 @@ import {
 
 export default function UploadPage() {
   const navigate = useNavigate();
-  const saje = "upload";
   const handleFileProcessed = (fileData) => {
     // After processing, navigate to results page
     navigate("/results", { state: { newFile: fileData } });
