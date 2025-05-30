@@ -1,6 +1,6 @@
 "use client"
 
-import { useState, useEffect } from "react"
+import { useState, useEffect, useMemo } from "react"
 import { Button } from "../ui/button"
 import { Input } from "../ui/input"
 import { Label } from "../ui/label"
@@ -19,6 +19,7 @@ import { Switch } from "../ui/switch"
 import * as LucideIcons from "lucide-react"
 
 export default function FileUploader({ onProcessed }) {
+  const [uniqueFileId, setUniqueFileId] = useState(null);
   const [selectedFile, setSelectedFile] = useState(null)
   const [reportNumber, setReportNumber] = useState("")
   const [comment, setComment] = useState("")
@@ -38,7 +39,7 @@ export default function FileUploader({ onProcessed }) {
       const file = e.target.files[0]
       setSelectedFile(file)
       resetState()
-
+      // NO calcular hashes aquí automáticamente
       // Classify file type
       const detectedType = await classifyFile(file)
       setFileType(detectedType)
@@ -51,7 +52,7 @@ export default function FileUploader({ onProcessed }) {
       const file = e.dataTransfer.files[0]
       setSelectedFile(file)
       resetState()
-
+      // NO calcular hashes aquí automáticamente
       // Classify file type
       const detectedType = await classifyFile(file)
       setFileType(detectedType)
@@ -67,6 +68,7 @@ export default function FileUploader({ onProcessed }) {
     setProgress(0)
     setExistingFile(null)
     setIsCheckingHash(false)
+    setUniqueFileId(null);
   }
 
   const handleDragOver = (e) => {
@@ -113,15 +115,13 @@ export default function FileUploader({ onProcessed }) {
   }
 
   const handleProcessFile = async () => {
-    if (!selectedFile) return
-    if (!segurmaticaResult) {
-      setError("Por favor espera a que se complete el escaneo con Segurmatica")
-      return
+    if (!selectedFile) return;
+    if (!fileHashes || !fileHashes.sha256) {
+      setError("Debes calcular los hashes antes de procesar el archivo.");
+      return;
     }
-
-    setIsProcessing(true)
-    setError(null)
-
+    setIsProcessing(true);
+    setError(null);
     try {
       // Calculate hashes if not already done
       const hashes = fileHashes || (await computeFileHashes(selectedFile))
@@ -183,6 +183,22 @@ export default function FileUploader({ onProcessed }) {
   }
 
   const FileTypeIcon = getFileIconComponent()
+
+  // Memoizar el objeto fileWithHashes para evitar recrearlo en cada render y provocar bucles
+  const fileWithHashes = useMemo(() => {
+    if (selectedFile && fileHashes) {
+      try {
+        const f = new File([selectedFile], selectedFile.name, { type: selectedFile.type });
+        f.hashes = fileHashes;
+        return f;
+      } catch (e) {
+        const fallback = selectedFile;
+        fallback.hashes = fileHashes;
+        return fallback;
+      }
+    }
+    return selectedFile;
+  }, [selectedFile, fileHashes]);
 
   return (
     <div className="space-y-6">
@@ -305,7 +321,7 @@ export default function FileUploader({ onProcessed }) {
                 <div className="mb-4">
                   <h3 className="text-sm font-medium mb-2">Escaneo con Segurmatica</h3>
                   <SegurmaticaScan
-                    file={selectedFile}
+                    file={fileWithHashes}
                     onResult={handleSegurmaticaResult}
                     onError={(err) => setError(err)}
                   />

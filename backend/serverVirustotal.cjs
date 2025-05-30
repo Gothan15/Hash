@@ -39,6 +39,18 @@ app.get('/api/file-info/:hash', async (req, res) => {
   }
 });
 
-app.listen(PORT, () =>
-  console.log(`✅ Backend escuchando en http://localhost:${PORT}`)
-);
+// app.listen(PORT, () =>
+//   console.log(`✅ Backend escuchando en http://localhost:${PORT}`)
+const https = require('https');
+const fs = require('fs');
+const path = require('path');
+// Configuración HTTPS
+const sslOptions = {
+  key: fs.readFileSync(path.resolve(__dirname, 'cert/172.22.67.71+1-key.pem')),
+  cert: fs.readFileSync(path.resolve(__dirname, 'cert/172.22.67.71+1.pem')),
+};
+
+https.createServer(sslOptions, app).listen(PORT, '0.0.0.0', () => {
+  console.log(`✅ Backend escuchando en https://172.22.67.71:${PORT}`);
+});
+;

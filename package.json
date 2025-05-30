@@ -8,7 +8,12 @@
     "build": "vite build",
     "lint": "eslint .",
     "preview": "vite preview",
-    "dev:backend": "nodemon server.cjs"
+    "dev:backend": "nodemon server.cjs",
+    "db:migrate": "node data_base/migrate.js migrate",
+    "db:stats": "node data_base/migrate.js stats",
+    "db:clear": "node data_base/migrate.js clear",
+    "db:test": "node data_base/test.js test",
+    "db:info": "node data_base/test.js info"
   },
   "dependencies": {
     "@hookform/resolvers": "^5.0.1",
@@ -41,6 +46,7 @@
     "@tailwindcss/vite": "^4.1.4",
     "@tanstack/react-table": "^8.21.3",
     "axios": "^1.9.0",
+    "better-sqlite3": "^11.10.0",
     "class-variance-authority": "^0.7.1",
     "clsx": "^2.1.1",
     "cmdk": "^1.1.1",
@@ -65,6 +71,7 @@
     "recharts": "^2.15.3",
     "sonner": "^2.0.3",
     "spark-md5": "^3.0.2",
+    "sqlite3": "^5.1.7",
     "tailwind-merge": "^3.2.0",
     "tailwindcss": "^4.1.4",
     "vaul": "^1.1.2",

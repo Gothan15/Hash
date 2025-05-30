@@ -1,3 +1,8 @@
+// FIREBASE CONFIGURATION DISABLED - NOW USING SQLITE
+// This file has been disabled as the application now uses SQLite exclusively
+// Original Firebase configuration moved to firebaseConfig-backup.js
+
+/*
 // Import the functions you need from the SDKs you need
 import { initializeApp } from "firebase/app";
 import { getAnalytics } from "firebase/analytics";
@@ -24,3 +29,13 @@ const db = getFirestore(app); // Initialize Firestore
 
 // Export the initialized services
 export { app, analytics, db };
+*/
+
+// SQLite is now used exclusively through the backend API
+// No Firebase configuration needed
+console.log("🗃️ Application configured to use SQLite database exclusively");
+
+// Export empty objects for compatibility (in case any components still import these)
+export const app = null;
+export const analytics = null;
+export const db = null;

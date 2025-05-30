@@ -36,7 +36,7 @@ export default function VirusTotalScan({ hash, onResult, onError }) {
       }, 300)
 
       // Call the VirusTotal API endpoint
-      const response = await fetch(`http://localhost:4000/api/file-info/${hash}`)
+      const response = await fetch(`https://172.22.67.71:4000/api/file-info/${hash}`)
 
       clearInterval(progressInterval)
       setProgress(100)

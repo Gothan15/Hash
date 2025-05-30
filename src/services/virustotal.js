@@ -5,7 +5,7 @@
  */
 export async function fetchFileInfo(hash) {
   try {
-    const response = await fetch(`http://localhost:4000/api/file-info/${hash}`)
+    const response = await fetch(`https://172.22.67.71:4000/api/file-info/${hash}`)
 
     if (!response.ok) {
       const errorData = await response.json().catch(() => ({}))

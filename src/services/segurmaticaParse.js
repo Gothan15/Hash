@@ -14,7 +14,7 @@ export function parseSegurmaticaResult(rawText) {
         proteccionTiempoReal: null,
       },
       resultados: {
-        totalArchivos: 0,
+        //totalArchivos: 0,
         infestados: 0,
         sospechosos: 0,
         limpios: 0,

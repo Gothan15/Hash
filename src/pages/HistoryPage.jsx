@@ -45,38 +45,67 @@ function formatDate(date) {
 function getScanStatusDisplay(scanResult) {
   if (!scanResult) return "-";
 
-  // Verificar que scanResult sea un string
-  if (typeof scanResult !== "string") {
-    console.warn("scanResult no es un string:", scanResult);
-    return "-";
+  // Si es string, intentar parsear como JSON
+  let result = scanResult;
+  if (typeof scanResult === "string") {
+    try {
+      result = JSON.parse(scanResult);
+    } catch {
+      // Si no es JSON, usar regex como antes
+      let infestados = 0;
+      let sospechosos = 0;
+      const infestadosMatch = scanResult.match(/Infestados:\s*(\d+)/);
+      const sospechososMatch = scanResult.match(/Sospechoso:\s*(\d+)/);
+      if (infestadosMatch) infestados = parseInt(infestadosMatch[1], 10);
+      if (sospechososMatch) sospechosos = parseInt(sospechososMatch[1], 10);
+      if (infestados > 0) {
+        return <Badge variant="destructive">Malicioso</Badge>;
+      } else if (sospechosos > 0) {
+        return (
+          <Badge
+            variant="outline"
+            className="bg-yellow-50 text-yellow-700 hover:bg-yellow-50"
+          >
+            Sospechoso
+          </Badge>
+        );
+      } else if (infestados === 0 && sospechosos === 0) {
+        return (
+          <Badge
+            variant="outline"
+            className="bg-green-50 text-green-700 hover:bg-green-50"
+          >
+            Limpio
+          </Badge>
+        );
+      }
+      return "-";
+    }
   }
 
-  let infestados = 0;
-  let sospechosos = 0;
-  const infestadosMatch = scanResult.match(/Infestados:\s*(\d+)/);
-  const sospechososMatch = scanResult.match(/Sospechoso:\s*(\d+)/);
-  if (infestadosMatch) infestados = parseInt(infestadosMatch[1], 10);
-  if (sospechososMatch) sospechosos = parseInt(sospechososMatch[1], 10);
-  if (infestados > 0) {
-    return <Badge variant="destructive">Malicioso</Badge>;
-  } else if (sospechosos > 0) {
-    return (
-      <Badge
-        variant="outline"
-        className="bg-yellow-50 text-yellow-700 hover:bg-yellow-50"
-      >
-        Sospechoso
-      </Badge>
-    );
-  } else if (infestados === 0 && sospechosos === 0) {
-    return (
-      <Badge
-        variant="outline"
-        className="bg-green-50 text-green-700 hover:bg-green-50"
-      >
-        Limpio
-      </Badge>
-    );
+  // Si es objeto (parseado por el parser)
+  if (result && typeof result === "object") {
+    if (result.status === "Infestado") {
+      return <Badge variant="destructive">Malicioso</Badge>;
+    } else if (result.status === "Sospechoso") {
+      return (
+        <Badge
+          variant="outline"
+          className="bg-yellow-50 text-yellow-700 hover:bg-yellow-50"
+        >
+          Sospechoso
+        </Badge>
+      );
+    } else if (result.status === "Limpio") {
+      return (
+        <Badge
+          variant="outline"
+          className="bg-green-50 text-green-700 hover:bg-green-50"
+        >
+          Limpio
+        </Badge>
+      );
+    }
   }
   return "-";
 }

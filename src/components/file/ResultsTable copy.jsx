@@ -41,6 +41,7 @@ import {
   updateFile,
   deleteFile,
   deleteMultipleFiles,
+  saveFileData,
 } from "../../services/firestore";
 import { parseVirusTotalResult } from "../../services/virustotalParse";
 import { parseSegurmaticaResult } from "../../services/segurmaticaParse";
@@ -185,21 +186,88 @@ export default function ResultsTable({ data, onDataChange }) {
   };
 
   const handleRescan = async (file) => {
+    // Iniciar barra de progreso
+    setProgressMap((prev) => ({ ...prev, [file.id]: 0 }));
+    let progress = 0;
+    clearInterval(progressTimers.current[file.id]);
+    progressTimers.current[file.id] = setInterval(() => {
+      progress += Math.random() * 15 + 5;
+      setProgressMap((prev) => ({
+        ...prev,
+        [file.id]: Math.min(progress, 95),
+      }));
+      if (progress >= 95) {
+        clearInterval(progressTimers.current[file.id]);
+      }
+    }, 200);
+
     try {
-      // Ejemplo: lógica de reescaneo (configurable)
-      setProgressMap((prev) => ({ ...prev, [file.id]: 0 }));
-      // Simular progreso
-      progressTimers.current[file.id] = setInterval(() => {
-        setProgressMap((prev) => {
-          const newPercent = Math.min((prev[file.id] || 0) + 10, 100);
-          if (newPercent === 100)
-            clearInterval(progressTimers.current[file.id]);
-          return { ...prev, [file.id]: newPercent };
-        });
-      }, 200);
-      // Ejemplo de actualización en Firestore (omitido)
-      // await updateFile(file.id, { /* nuevos datos */ });
-      onDataChange && onDataChange();
+      // Crear el nuevo objeto de archivo con la misma información pero fecha actual
+      const newFileData = {
+        name: file.name,
+        date: new Date(), // Nueva fecha de reescaneo
+        type: file.type,
+        size: file.size,
+        hashes: file.hashes,
+        reportNumber: file.reportNumber,
+        comment: file.comment,
+        originalScanDate: file.date, // Guardamos la fecha del escaneo original
+        scanResult: null, // Se actualizará después del escaneo
+        virusTotalResult: null, // Se actualizará después del escaneo
+      };
+
+      // Crear formData para el archivo
+      const formData = new FormData();
+      const blob = new Blob([file], { type: file.type });
+      formData.append("file", blob, file.name);
+
+      // Escanear con Segurmatica
+      const segResponse = await fetch(
+        "https://172.22.67.71:3001/scan-segurmatica",
+        {
+          method: "POST",
+          body: formData,
+        }
+      );
+
+      if (!segResponse.ok) {
+        throw new Error("Error al escanear con Segurmatica");
+      }
+
+      const segData = await segResponse.json();
+      const scanResult = segData.stdout || JSON.stringify(segData);
+      newFileData.scanResult = scanResult;
+
+      // Obtener resultados de VirusTotal
+      const vtResponse = await fetch(
+        `https://172.22.67.71:4000/api/file-info/${file.hashes.sha256}`
+      );
+      if (vtResponse.ok) {
+        const vtData = await vtResponse.json();
+        const parsedVTResult = parseVirusTotalResult(vtData);
+        newFileData.virusTotalResult = parsedVTResult;
+      }
+
+      // Guardar el nuevo análisis en Firestore
+      await saveFileData(newFileData);
+
+      // Terminar barra de progreso
+      clearInterval(progressTimers.current[file.id]);
+      setProgressMap((prev) => ({ ...prev, [file.id]: 100 }));
+
+      // Limpiar barra de progreso después de un segundo
+      setTimeout(
+        () =>
+          setProgressMap((prev) => {
+            const copy = { ...prev };
+            delete copy[file.id];
+            return copy;
+          }),
+        1000
+      );
+
+      // Refrescar datos
+      if (onDataChange) onDataChange();
     } catch (error) {
       console.error("Error durante el reescaneo:", error);
       clearInterval(progressTimers.current[file.id]);
@@ -443,9 +511,11 @@ export default function ResultsTable({ data, onDataChange }) {
                 <Checkbox
                   checked={isAllCurrentPageSelected && paginatedData.length > 0}
                   indeterminate={
-                    hasSelection &&
+                    (hasSelection &&
                     !isAllCurrentPageSelected &&
-                    paginatedData.some((item) => selectedItems.has(item.id))
+                    paginatedData.some((item) => selectedItems.has(item.id)))
+                      ? true
+                      : undefined
                   }
                   onCheckedChange={toggleSelectAll}
                   disabled={paginatedData.length === 0}
